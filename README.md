@@ -1,17 +1,18 @@
-﻿# Sleep Quality Predictor - Android App with TensorFlow Lite
+# Sleep Quality Predictor — Flutter & TensorFlow Lite (`tflite_flutter`)
 
-An AI-powered Android application that performs on-device machine learning inference using **TensorFlow Lite (TFLite)** to predict personal sleep quality tiers based on daily lifestyle and physiological metrics.
+An AI-powered cross-platform **Flutter (Dart)** mobile application that performs on-device machine learning inference using **TensorFlow Lite (`tflite_flutter`)** to predict personal sleep quality tiers based on daily lifestyle and physiological metrics.
 
 Developed for **Assignment No. 2: AI-Based Mini Application Development**  
-*Course: Mobile Application Development*  
+*Course: Mobile Application Development (BSCS-5B, KICSIT)*  
+*Author:* **Muhammad Faizan Ashraf** (Roll No: `242201089`)  
 *Reference Repository:* [NumberGuessingAppTflite](https://github.com/Uzair390-Del/NumberGuessingAppTflite.git)
 
 ---
 
 ## 📌 Project Overview
-Modern health tracking requires low-latency, private, and offline intelligence. This application embeds a trained Artificial Neural Network (ANN) directly into an Android app using TensorFlow Lite.
+Modern health tracking requires low-latency, private, and offline intelligence. This Flutter application embeds a trained Deep Neural Network (`.tflite`) directly into the app bundle and executes inference on-device via `tflite_flutter`.
 
-### Input Features:
+### Input Features (5 Health & Lifestyle Metrics):
 1. **Age** (years)
 2. **Sleep Duration** (hours per night)
 3. **Physical Activity** (minutes per day)
@@ -19,69 +20,59 @@ Modern health tracking requires low-latency, private, and offline intelligence. 
 5. **Body Mass Index (BMI)** (numeric score)
 
 ### Output Predictions:
-- **Optimal / Restful Sleep** (Class 2, Green indicator + health insight)
-- **Moderate / Fair Sleep** (Class 1, Amber indicator + guidance)
+- **Optimal / Restful Sleep** (Class 2, Green indicator + restorative health insight)
+- **Moderate / Fair Sleep** (Class 1, Amber indicator + sleep hygiene guidance)
 - **Poor / Restless Sleep** (Class 0, Red indicator + recovery warning)
-- Exact inference confidence percentage and probability distribution.
+- Exact inference confidence percentage and 3-class Softmax probability distribution.
 
 ---
 
 ## ⚙️ Architecture & Working Mechanism
-1. **Model Loading:** The binary flatbuffer model `sleep_quality.tflite` in `assets/` is loaded into memory via `AssetFileDescriptor` and `FileChannel.map` as a `MappedByteBuffer`.
-2. **Interpreter Initialization:** `org.tensorflow.lite.Interpreter` initializes a native C++ runtime on-device.
-3. **Input Preprocessing:** User inputs from the UI are normalized using standard z-score normalization:
-   $$\text{scaled\_value} = \frac{\text{raw\_value} - \mu}{\sigma}$$
-4. **Inference Execution:** `interpreter.run(inputBuffer, outputBuffer)` performs low-latency inference (~15ms on modern mobile CPU).
-5. **Post-Processing:** The output probabilities are parsed using `argmax`, updating the UI with colored status badges, percentage confidence, and actionable health feedback.
-
----
-
-## 🛠️ Prerequisites & Dependencies
-- **Android Studio:** Hedgehog (2023.1.1) or newer
-- **Gradle:** 8.5+ with Android Gradle Plugin 8.5+
-- **JDK:** Java 11 or 17
-- **Target SDK:** 35 | **Minimum SDK:** 24 (Android 7.0+)
-- **Core Library:** `org.tensorflow:tensorflow-lite:2.14.0`
-
----
-
-## 🚀 How to Run the Project
-1. Clone or extract this repository into your local machine:
-   ```bash
-   git clone https://github.com/Faizan-15/SleepQualityPredictor-TFLite-Android.git
-   ```
-2. Open **Android Studio** and select **File -> Open...**
-3. Navigate to the `SleepQualityPredictor` directory and click **OK**.
-4. Allow Gradle to sync dependencies automatically.
-5. Connect an Android device (via USB with USB Debugging enabled) or start an Android Virtual Device (AVD).
-6. Click the green **Run (Shift + F10)** button in Android Studio.
-7. Click the **"Auto Fill"** button to load sample data or enter custom values, then click **"Predict Sleep"**.
+1. **Model Loading (`lib/services/tflite_sleep_service.dart`):** Loads `assets/sleep_quality.tflite` using `Interpreter.fromAsset('assets/sleep_quality.tflite')`.
+2. **Input Preprocessing:** Raw user inputs from Flutter `TextField` controllers are standardized using training Z-score normalization parameters ($\mu$ and $\sigma$).
+3. **Inference Execution:** `_interpreter.run(inputBuffer, outputBuffer)` executes the forward pass locally in under 5ms.
+4. **Post-Processing (`lib/widgets/prediction_result_card.dart`):** Softmax probabilities are parsed via `ArgMax` to render color-coded Material 3 diagnostic cards.
 
 ---
 
 ## 📂 Repository Structure
-```
-SleepQualityPredictor/
-├── app/
-│   ├── src/
-│   │   └── main/
-│   │       ├── assets/
-│   │       │   └── sleep_quality.tflite      # Compiled TFLite Neural Network Model
-│   │       ├── java/com/example/sleepqualitypredictor/
-│   │       │   └── MainActivity.java         # Core UI & TFLite Inference logic
-│   │       ├── res/
-│   │       │   └── layout/activity_main.xml  # Clean Material CardView UI
-│   │       └── AndroidManifest.xml
-│   └── build.gradle                         # TFLite dependency & noCompress rules
-├── gradle/
-├── build.gradle
-├── settings.gradle
+```text
+SleepQualityPredictor-TFLite-Android/
+├── assets/
+│   └── sleep_quality.tflite                 # Quantized TFLite Neural Network Model
+├── lib/
+│   ├── main.dart                            # Flutter Application Entry Point
+│   ├── models/
+│   │   └── sleep_prediction.dart            # Data Models (SleepInputMetrics, SleepPredictionResult)
+│   ├── screens/
+│   │   └── home_screen.dart                 # Interactive Material 3 Form & Prediction Screen
+│   ├── services/
+│   │   └── tflite_sleep_service.dart        # TFLite Interpreter Wrapper & Z-Score Normalizer
+│   └── widgets/
+│       └── prediction_result_card.dart      # Dynamic Color-Coded Outcome Card Widget
+├── test/
+│   └── widget_test.dart                     # Unit Tests for TC-01, TC-02, TC-03 Profiles
+├── app/                                     # Android Studio Host Module & Gradle Wrapper
+├── pubspec.yaml                             # Flutter Dependencies (tflite_flutter) & Assets
+├── train_sleep_quality.py                   # Python Keras Training & TFLite Conversion Script
+├── SleepQualityPredictor.apk                # Pre-built Signed Installable Android APK
 └── README.md
 ```
 
 ---
 
-## 📜 References & Acknowledgments
-- Starter Reference Repository: [NumberGuessingAppTflite](https://github.com/Uzair390-Del/NumberGuessingAppTflite.git)
-- TensorFlow Lite Documentation: [https://www.tensorflow.org/lite](https://www.tensorflow.org/lite)
-- Sleep Health and Lifestyle Dataset: Kaggle Public Domain Health Datasets
+## 🚀 How to Run the Project
+
+### Option A: Run with Flutter CLI
+```bash
+git clone https://github.com/Faizan-15/SleepQualityPredictor-TFLite-Android.git
+cd SleepQualityPredictor-TFLite-Android
+flutter pub get
+flutter run
+```
+
+### Option B: Install the Pre-Built Signed APK Directly
+Download [`SleepQualityPredictor.apk`](./SleepQualityPredictor.apk) from this repository and install it on any Android device (Android 7.0+ / API 24+):
+```bash
+adb install -r SleepQualityPredictor.apk
+```
