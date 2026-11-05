@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainScroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F4F6F9"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- App Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sleep Quality AI"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="#1A237E" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="On-Device TensorFlow Lite Prediction"
+            android:textSize="14sp"
+            android:textColor="#5C6BC0" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp"
+            android:background="#D1D5DB" />
+
+        <!-- Input Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="3dp"
+            app:cardBackgroundColor="#FFFFFF"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enter Daily Lifestyle Metrics"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#263238"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- 1. Age -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Age (years):"
+                    android:textSize="13sp"
+                    android:textColor="#37474F" />
+                <EditText
+                    android:id="@+id/etAge"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="e.g. 28"
+                    android:inputType="number"
+                    android:layout_marginBottom="10dp"
+                    android:paddingHorizontal="10dp"
+                    android:background="@android:drawable/edit_text" />
+
+                <!-- 2. Sleep Duration -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sleep Duration (hours):"
+                    android:textSize="13sp"
+                    android:textColor="#37474F" />
+                <EditText
+                    android:id="@+id/etSleepDuration"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="e.g. 7.5"
+                    android:inputType="numberDecimal"
+                    android:layout_marginBottom="10dp"
+                    android:paddingHorizontal="10dp"
+                    android:background="@android:drawable/edit_text" />
+
+                <!-- 3. Physical Activity -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Physical Activity (minutes/day):"
+                    android:textSize="13sp"
+                    android:textColor="#37474F" />
+                <EditText
+                    android:id="@+id/etPhysicalActivity"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="e.g. 45"
+                    android:inputType="number"
+                    android:layout_marginBottom="10dp"
+                    android:paddingHorizontal="10dp"
+                    android:background="@android:drawable/edit_text" />
+
+                <!-- 4. Stress Level -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stress Level (1 - 10):"
+                    android:textSize="13sp"
+                    android:textColor="#37474F" />
+                <EditText
+                    android:id="@+id/etStressLevel"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="e.g. 4"
+                    android:inputType="number"
+                    android:layout_marginBottom="10dp"
+                    android:paddingHorizontal="10dp"
+                    android:background="@android:drawable/edit_text" />
+
+                <!-- 5. BMI -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Body Mass Index (BMI):"
+                    android:textSize="13sp"
+                    android:textColor="#37474F" />
+                <EditText
+                    android:id="@+id/etBmi"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="e.g. 23.5"
+                    android:inputType="numberDecimal"
+                    android:layout_marginBottom="14dp"
+                    android:paddingHorizontal="10dp"
+                    android:background="@android:drawable/edit_text" />
+
+                <!-- Action Buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnPredict"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="Predict Sleep"
+                        android:textAllCaps="false"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:backgroundTint="#1A237E"
+                        android:textColor="#FFFFFF" />
+
+                    <Button
+                        android:id="@+id/btnSampleData"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:text="Auto Fill"
+                        android:textAllCaps="false"
+                        android:textSize="13sp"
+                        android:backgroundTint="#ECEFF1"
+                        android:textColor="#37474F" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Result Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:visibility="gone"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI Prediction Outcome"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="#78909C" />
+
+                <TextView
+                    android:id="@+id/tvPredictionResult"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Optimal / Restful Sleep"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="#2E7D32" />
+
+                <TextView
+                    android:id="@+id/tvConfidence"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Confidence: 94.2%"
+                    android:textSize="14sp"
+                    android:textColor="#455A64" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="#ECEFF1" />
+
+                <TextView
+                    android:id="@+id/tvRecommendation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Healthy sleep duration and high activity level strongly correlate with high restorative sleep."
+                    android:textSize="13sp"
+                    android:lineSpacingExtra="3dp"
+                    android:textColor="#37474F" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+</ScrollView>
