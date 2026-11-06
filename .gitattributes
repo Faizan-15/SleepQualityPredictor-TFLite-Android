@@ -1,4 +1,5 @@
 *.dart linguist-language=Dart
 app/** linguist-vendored
 gradle/** linguist-vendored
-*.py linguist-vendoredandroid/** linguist-vendored
+*.py linguist-vendored
+android/** linguist-vendored
