@@ -35,6 +35,20 @@ Modern health tracking requires low-latency, private, and offline intelligence. 
 
 ---
 
+## 🔐 App Flow & User Accounts
+```text
+Splash Screen ──► (session found?) ──► Home (TFLite Prediction)
+       │                                   ▲
+       └──► Login ◄──► Sign Up ────────────┘
+```
+- **Splash Screen** (`lib/screens/splash_screen.dart`): animated gradient brand screen; restores a saved session.
+- **Login** (`lib/screens/login_screen.dart`): email/password validation, show/hide password, error feedback.
+- **Sign Up** (`lib/screens/signup_screen.dart`): name, email, password + confirmation; auto-login on success.
+- **Local Auth** (`lib/services/auth_service.dart`): fully offline — accounts are stored on-device with salted, hashed passwords (demo-grade; no backend).
+- **Home**: personalised greeting, clear-inputs action and log-out with confirmation.
+
+---
+
 ## 📂 Repository Structure
 ```text
 SleepQualityPredictor-TFLite-Android/

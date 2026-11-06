@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import '../models/sleep_prediction.dart';

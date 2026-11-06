@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/sleep_prediction.dart';
 import '../services/tflite_sleep_service.dart';
 import '../widgets/prediction_result_card.dart';
+import '../services/auth_service.dart';
+import 'login_screen.dart';
 
 /// Main interactive screen allowing users to input 5 daily health metrics,
 /// trigger on-device TensorFlow Lite inference, and inspect results.
@@ -92,6 +94,31 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
     }
   }
 
+  Future<void> _confirmLogout() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Log out?'),
+        content: const Text('You will need to log in again to use the app.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Log out')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await AuthService.instance.logout();
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (_) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -112,6 +139,29 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Clear inputs',
+            icon: const Icon(Icons.refresh),
+            onPressed: () => setState(() {
+              for (final c in [
+                _ageController,
+                _sleepController,
+                _activityController,
+                _stressController,
+                _bmiController
+              ]) {
+                c.clear();
+              }
+              _predictionResult = null;
+            }),
+          ),
+          IconButton(
+            tooltip: 'Log out',
+            icon: const Icon(Icons.logout),
+            onPressed: _confirmLogout,
+          ),
+        ],
       ),
       body: !_isModelReady
           ? const Center(child: CircularProgressIndicator())
@@ -120,6 +170,16 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: Text(
+                      'Hello, ${AuthService.instance.currentName ?? 'there'} 👋',
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1E293B)),
+                    ),
+                  ),
                   Card(
                     elevation: 3,
                     shape: RoundedRectangleBorder(
