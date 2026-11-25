@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/sleep_prediction.dart';
 import '../services/tflite_sleep_service.dart';
 import '../widgets/prediction_result_card.dart';
@@ -75,23 +76,56 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
     }
 
     try {
+      final age = double.parse(_ageController.text.trim());
+      final sleepDuration = double.parse(_sleepController.text.trim());
+      final activity = double.parse(_activityController.text.trim());
+      final stress = double.parse(_stressController.text.trim());
+      final bmi = double.parse(_bmiController.text.trim());
+
+      if (age < 10 || age > 120) {
+        _showValidationAlert('Age must be between 10 and 120 years.');
+        return;
+      }
+      if (sleepDuration <= 0 || sleepDuration > 24) {
+        _showValidationAlert('Sleep duration must be between 0.5 and 24 hours.');
+        return;
+      }
+      if (activity < 0 || activity > 720) {
+        _showValidationAlert('Physical activity must be between 0 and 720 minutes.');
+        return;
+      }
+      if (stress < 1 || stress > 10) {
+        _showValidationAlert('Stress level must be on a scale of 1 to 10.');
+        return;
+      }
+      if (bmi < 10 || bmi > 70) {
+        _showValidationAlert('BMI must be between 10 and 70.');
+        return;
+      }
+
       final metrics = SleepInputMetrics(
-        age: double.parse(_ageController.text.trim()),
-        sleepDurationHours: double.parse(_sleepController.text.trim()),
-        physicalActivityMinutes: double.parse(_activityController.text.trim()),
-        stressLevel: double.parse(_stressController.text.trim()),
-        bmi: double.parse(_bmiController.text.trim()),
+        age: age,
+        sleepDurationHours: sleepDuration,
+        physicalActivityMinutes: activity,
+        stressLevel: stress,
+        bmi: bmi,
       );
 
       final result = _tfliteService.predict(metrics);
       setState(() => _predictionResult = result);
     } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid number entered. Please check inputs.'),
-        ),
-      );
+      _showValidationAlert('Invalid numeric input. Please check all fields.');
     }
+  }
+
+  void _showValidationAlert(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFFC62828),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _confirmLogout() async {
@@ -200,15 +234,36 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
                             ),
                           ),
                           const SizedBox(height: 14),
-                          _buildNumericField('Age (years):', 'e.g. 28', _ageController),
                           _buildNumericField(
-                              'Sleep Duration (hours):', 'e.g. 8.0', _sleepController),
-                          _buildNumericField('Physical Activity (minutes/day):',
-                              'e.g. 60', _activityController),
+                            label: 'Age (years):',
+                            hint: 'e.g. 28 (18 - 100)',
+                            controller: _ageController,
+                            allowDecimal: false,
+                          ),
                           _buildNumericField(
-                              'Stress Level (1 - 10):', 'e.g. 3', _stressController),
+                            label: 'Sleep Duration (hours):',
+                            hint: 'e.g. 8.0 (1 - 24)',
+                            controller: _sleepController,
+                            allowDecimal: true,
+                          ),
                           _buildNumericField(
-                              'Body Mass Index (BMI):', 'e.g. 22.4', _bmiController),
+                            label: 'Physical Activity (minutes/day):',
+                            hint: 'e.g. 60 (0 - 360)',
+                            controller: _activityController,
+                            allowDecimal: false,
+                          ),
+                          _buildNumericField(
+                            label: 'Stress Level (1 - 10):',
+                            hint: 'e.g. 3 (scale 1 - 10)',
+                            controller: _stressController,
+                            allowDecimal: false,
+                          ),
+                          _buildNumericField(
+                            label: 'Body Mass Index (BMI):',
+                            hint: 'e.g. 22.4 (10 - 60)',
+                            controller: _bmiController,
+                            allowDecimal: true,
+                          ),
                           const SizedBox(height: 10),
                           Row(
                             children: [
@@ -265,8 +320,12 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
     );
   }
 
-  Widget _buildNumericField(
-      String label, String hint, TextEditingController controller) {
+  Widget _buildNumericField({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    required bool allowDecimal,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
       child: Column(
@@ -279,7 +338,13 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
           const SizedBox(height: 4),
           TextField(
             controller: controller,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: TextInputType.numberWithOptions(decimal: allowDecimal),
+            inputFormatters: [
+              if (allowDecimal)
+                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))
+              else
+                FilteringTextInputFormatter.digitsOnly,
+            ],
             decoration: InputDecoration(
               hintText: hint,
               filled: true,
