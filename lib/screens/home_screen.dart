@@ -6,8 +6,9 @@ import '../widgets/prediction_result_card.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
 
-/// Main interactive screen allowing users to input 5 daily health metrics,
-/// trigger on-device TensorFlow Lite inference, and inspect results.
+/// Main interactive screen allowing users to input daily health metrics,
+/// compute BMI from weight & height, trigger on-device TensorFlow Lite inference,
+/// and inspect results.
 class SleepHomeScreen extends StatefulWidget {
   const SleepHomeScreen({super.key});
 
@@ -18,11 +19,14 @@ class SleepHomeScreen extends StatefulWidget {
 class _SleepHomeScreenState extends State<SleepHomeScreen> {
   final TFLiteSleepService _tfliteService = TFLiteSleepService();
 
+  // Input controllers
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _sleepController = TextEditingController();
   final TextEditingController _activityController = TextEditingController();
   final TextEditingController _stressController = TextEditingController();
-  final TextEditingController _bmiController = TextEditingController();
+  final TextEditingController _weightController = TextEditingController(); // kg
+  final TextEditingController _heightFeetController = TextEditingController(); // feet
+  final TextEditingController _heightInchesController = TextEditingController(); // inches
 
   SleepPredictionResult? _predictionResult;
   bool _isModelReady = false;
@@ -47,7 +51,8 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
     _sleepController.dispose();
     _activityController.dispose();
     _stressController.dispose();
-    _bmiController.dispose();
+    _weightController.dispose();
+    // _heightController disposed (replaced by feet/inches controllers)
     super.dispose();
   }
 
@@ -57,19 +62,40 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
       _sleepController.text = '8.0';
       _activityController.text = '60';
       _stressController.text = '3';
-      _bmiController.text = '22.4';
+      _weightController.text = '70'; // kg
+      _heightFeetController.text = '5'; // feet
+      _heightInchesController.text = '9'; // inches
+    });
+    setState(() {
+      _ageController.text = '28';
+      _sleepController.text = '8.0';
+      _activityController.text = '60';
+      _stressController.text = '3';
+      _weightController.text = '70'; // kg
+      _heightFeetController.text = '5'; // feet
+      _heightInchesController.text = '9'; // inches
+    });
+    setState(() {
+      _ageController.text = '28';
+      _sleepController.text = '8.0';
+      _activityController.text = '60';
+      _stressController.text = '3';
+      _weightController.text = '70'; // kg
+
     });
   }
 
   void _runInference() {
+    // Ensure all fields are filled
     if (_ageController.text.trim().isEmpty ||
         _sleepController.text.trim().isEmpty ||
         _activityController.text.trim().isEmpty ||
         _stressController.text.trim().isEmpty ||
-        _bmiController.text.trim().isEmpty) {
+        _weightController.text.trim().isEmpty ||
+        _heightController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter all 5 health metrics before predicting.'),
+          content: Text('Please enter all health metrics before predicting.'),
         ),
       );
       return;
@@ -80,8 +106,12 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
       final sleepDuration = double.parse(_sleepController.text.trim());
       final activity = double.parse(_activityController.text.trim());
       final stress = double.parse(_stressController.text.trim());
-      final bmi = double.parse(_bmiController.text.trim());
+      final weight = double.parse(_weightController.text.trim());
+      final heightFeet = int.parse(_heightFeetController.text.trim());
+      final heightInches = int.parse(_heightInchesController.text.trim());
+      final heightCm = (heightFeet * 12 + heightInches) * 2.54;
 
+      // Range validation
       if (age < 10 || age > 120) {
         _showValidationAlert('Age must be between 10 and 120 years.');
         return;
@@ -98,10 +128,18 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
         _showValidationAlert('Stress level must be on a scale of 1 to 10.');
         return;
       }
-      if (bmi < 10 || bmi > 70) {
-        _showValidationAlert('BMI must be between 10 and 70.');
+      if (weight < 2 || weight > 300) {
+        _showValidationAlert('Weight must be between 2 and 300 kg.');
         return;
       }
+      if (heightCm < 30 || heightCm > 250) {
+        _showValidationAlert('Height must be between 30 and 250 cm.');
+        return;
+      }
+
+      // BMI calculation
+      final heightM = heightCm / 100.0;
+      final bmi = weight / (heightM * heightM);
 
       final metrics = SleepInputMetrics(
         age: age,
@@ -113,6 +151,15 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
 
       final result = _tfliteService.predict(metrics);
       setState(() => _predictionResult = result);
+
+      // Show BMI as a friendly SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Your BMI: ${bmi.toStringAsFixed(1)}'),
+          backgroundColor: const Color(0xFF2E7D32),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } catch (_) {
       _showValidationAlert('Invalid numeric input. Please check all fields.');
     }
@@ -183,7 +230,8 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
                 _sleepController,
                 _activityController,
                 _stressController,
-                _bmiController
+                _weightController,
+                _heightController,
               ]) {
                 c.clear();
               }
@@ -236,19 +284,19 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
                           const SizedBox(height: 14),
                           _buildNumericField(
                             label: 'Age (years):',
-                            hint: 'e.g. 28 (18 - 100)',
+                            hint: 'e.g. 28 (10 - 120)',
                             controller: _ageController,
                             allowDecimal: false,
                           ),
                           _buildNumericField(
                             label: 'Sleep Duration (hours):',
-                            hint: 'e.g. 8.0 (1 - 24)',
+                            hint: 'e.g. 8.0 (0.5 - 24)',
                             controller: _sleepController,
                             allowDecimal: true,
                           ),
                           _buildNumericField(
                             label: 'Physical Activity (minutes/day):',
-                            hint: 'e.g. 60 (0 - 360)',
+                            hint: 'e.g. 60 (0 - 720)',
                             controller: _activityController,
                             allowDecimal: false,
                           ),
@@ -258,11 +306,24 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
                             controller: _stressController,
                             allowDecimal: false,
                           ),
+                          // New weight & height fields for BMI calculation
                           _buildNumericField(
-                            label: 'Body Mass Index (BMI):',
-                            hint: 'e.g. 22.4 (10 - 60)',
-                            controller: _bmiController,
-                            allowDecimal: true,
+                            label: 'Weight (kg):',
+                            hint: 'e.g. 70 (2 - 300)',
+                            controller: _weightController,
+                            allowDecimal: false,
+                          ),
+                          _buildNumericField(
+                            label: 'Height (feet):',
+                            hint: 'e.g. 5 (1 - 8)',
+                            controller: _heightFeetController,
+                            allowDecimal: false,
+                          ),
+                          _buildNumericField(
+                            label: 'Height (inches):',
+                            hint: 'e.g. 9 (0 - 11)',
+                            controller: _heightInchesController,
+                            allowDecimal: false,
                           ),
                           const SizedBox(height: 10),
                           Row(
@@ -341,7 +402,7 @@ class _SleepHomeScreenState extends State<SleepHomeScreen> {
             keyboardType: TextInputType.numberWithOptions(decimal: allowDecimal),
             inputFormatters: [
               if (allowDecimal)
-                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))
+                FilteringTextInputFormatter.allow(RegExp(r'^\\d*\\.?\\d{0,2}'))
               else
                 FilteringTextInputFormatter.digitsOnly,
             ],
